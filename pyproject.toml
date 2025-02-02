@@ -1,7 +1,7 @@
 [project]
 name = "matrix-webhook-bot"
-version = "0.1.1"
 description = ""
+dynamic = ["version"]
 authors = [{ name = "hidraulicChicken" }]
 requires-python = ">=3.13"
 readme = "README.md"
@@ -27,7 +27,8 @@ matrix-webhook-bot = "matrix_webhook_bot.main:main"
 dev = [
     "pytest",
     "black",
-    "ruff"
+    "ruff",
+    "hatch"
 ]
 
 [tool.uv]
@@ -37,3 +38,6 @@ dependencies = true             # Auto-sync dependencies on activation
 [tool.pyright]
 venvPath = "."
 venv = ".venv"
+
+[tool.hatch.version]
+source = "vcs" 
