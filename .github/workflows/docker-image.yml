@@ -29,5 +29,5 @@ jobs:
           context: .
           push: true
           tags: |
-            hidraulicchicken/matrix-webhook-bot:latest
-            hidraulicchicken/matrix-webhook-bot:${{ env.VERSION }}
+            hidraulichicken/matrix-webhook-bot:latest
+            hidraulichicken/matrix-webhook-bot:${{ env.VERSION }}
