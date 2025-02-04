@@ -9,27 +9,27 @@ logger = logging.getLogger(__name__)
 
 class DynamicApi:
     def __init__(self, app: FastAPI, log) -> None:
-        self.bot = None
+        self.appservice = None
         self.app = app
         self.log = log
         self.hooks = {}
 
-    def set_bot(self, bot):
-        self.bot = bot
+    def set_appservice(self, appservice):
+        self.appservice = appservice
 
     def add_dynamic_endpoint(self, hook_id: str):
         async def dynamic_handler(request: Request, route_path: str):
             data = await request.json()
             self.log.info(data)
-            if self.bot:
-                await self.bot.forward_webhook_message(route_path, data)
+            if self.appservice:
+                await self.appservice.forward_webhook_message(route_path, data)
             return {
                 "message": f"Received data for webhook {hook_id} @ {route_path}",
                 "data": data,
             }
 
         hook_uuid = uuid.uuid4()
-        route_path = f"/webhook-bot/{hook_uuid}"
+        route_path = f"/webhook-appservice/{hook_uuid}"
         self.app.add_api_route(route_path, dynamic_handler, methods=["POST"])
 
         self.hooks.update({hook_id: route_path})

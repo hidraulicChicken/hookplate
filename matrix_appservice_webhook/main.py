@@ -2,34 +2,34 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import asyncio
 import uvicorn
-from webhook_bot import WebhookBot
+from webhook_appservice import WebhookAppservice
 from api import DynamicApi
-from logger import BotLogger
+from logger import AppserviceLogger
 
 listen_port = 8228
-log = BotLogger()
-bot = None  # Store bot instance globally
+log = AppserviceLogger()
+appservice = None  # Store appservice instance globally
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Manage startup and shutdown lifecycle"""
-    global bot
+    global appservice
 
     api = DynamicApi(app, log)
-    bot = WebhookBot(api, log, listen_port)
+    appservice = WebhookAppservice(api, log, listen_port)
 
     try:
-        await bot.start()  # Start bot
+        await appservice.start()  # Start appservice
         yield  # Hand over control to FastAPI
     finally:
-        log.info("Shutting down bot...")
-        if bot:
+        log.info("Shutting down appservice...")
+        if appservice:
             try:
-                await bot.stop()
-                log.info("Bot stopped.")
+                await appservice.stop()
+                log.info("Appservice stopped.")
             except asyncio.CancelledError:
-                log.info("Bot shutdown was interrupted.")
+                log.info("Appservice shutdown was interrupted.")
 
         log.info("Lifespan shutdown complete.")
 
@@ -48,7 +48,7 @@ async def run_uvicorn():
 
 
 async def main():
-    """Start Uvicorn and bot together"""
+    """Start Uvicorn and appservice together"""
     await run_uvicorn()
 
 

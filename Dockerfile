@@ -10,7 +10,7 @@ COPY . /app
 
 # Expose port and set up volume
 EXPOSE 8228
-VOLUME /app/matrix_webhook_bot/config
+VOLUME /app/matrix_appservice_webhook/config
 
 # Install dependencies and set up Python
 RUN apt update && \
@@ -23,7 +23,7 @@ RUN apt update && \
 
 
 # Set working directory
-WORKDIR /app/matrix_webhook_bot
+WORKDIR /app/matrix_appservice_webhook
 
 # Use the Python interpreter from the virtual environment
 ENTRYPOINT ["python", "main.py"]
