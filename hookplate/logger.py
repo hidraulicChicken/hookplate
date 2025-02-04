@@ -1,7 +1,7 @@
 import logging
 
 
-class BotLogger:
+class AppserviceLogger:
     def __init__(self) -> None:
         logging.basicConfig(level=logging.DEBUG)
         self.logger = logging.getLogger()
