@@ -1,5 +1,5 @@
 [project]
-name = "matrix-webhook-bot"
+name = "matrix-appservice-webhook"
 description = ""
 dynamic = ["version"]
 authors = [{ name = "hidraulicChicken" }]
@@ -21,7 +21,7 @@ requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project.scripts]
-matrix-webhook-bot = "matrix_webhook_bot.main:main"
+matrix-appservice-webhook = "matrix_appservice_webhook.main:main"
 
 [project.optional-dependencies]
 dev = [

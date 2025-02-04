@@ -22,20 +22,20 @@ import os
 import configparser
 
 
-class WebhookBot:
+class WebhookAppservice:
     def __init__(self, api: "DynamicApi", log, listen_port):
         self._client: Optional[Client] = None
         self.event_id = None
         self.latest_timestamp = 32503723200000
-        self.bot_controll_room_id = RoomID("")
-        self.bot_output_room_id = RoomID("")
+        self.appservice_controll_room_id = RoomID("")
+        self.appservice_output_room_id = RoomID("")
         self.api = api
-        self.api.set_bot(self)
+        self.api.set_appservice(self)
         self.log = log
         self.homeserver_url = ""
         self.token = ""
         self.admin_user = UserID("")
-        self.bot_user = UserID("")
+        self.appservice_user = UserID("")
         self.listen_port = listen_port
         self.device_id = "AAAAAAAAAA"
 
@@ -54,8 +54,8 @@ class WebhookBot:
         admin_user = os.getenv(
             "ADMIN_USER", config.get("settings", "admin_user", fallback=None)
         )
-        bot_user = os.getenv(
-            "BOT_USER", config.get("settings", "bot_user", fallback=None)
+        appservice_user = os.getenv(
+            "APPSERVICE_USER", config.get("settings", "appservice_user", fallback=None)
         )
         self.token = os.getenv("TOKEN", config.get("settings", "token", fallback=None))
         self.device_id = os.getenv(
@@ -64,26 +64,26 @@ class WebhookBot:
         if not (
             self.homeserver_url
             and admin_user
-            and bot_user
+            and appservice_user
             and self.token
             and self.device_id
         ):
             raise ValueError(f"""Configuration is missing, recheck 
             homeserver_url: {self.homeserver_url}\n
             admin_user: {admin_user}\n
-            bot_user: {bot_user}\n
+            appservice_user: {appservice_user}\n
             token: {self.token}""")
         self.admin_user = UserID(admin_user)
-        self.bot_user = UserID(bot_user)
+        self.appservice_user = UserID(appservice_user)
 
     async def start(self):
         await self.load_config()
-        self.log.info(self.bot_user)
+        self.log.info(self.appservice_user)
         loaded_hooks = self.api.load_persisted_endpoints()
         store_path = "./state_store"
         state_store = FileStateStore(store_path)
         self._client = Client(
-            mxid=self.bot_user,
+            mxid=self.appservice_user,
             device_id=self.device_id,
             state_store=state_store,
             base_url=self.homeserver_url,
@@ -93,23 +93,23 @@ class WebhookBot:
         await self.setup_output_room()
 
         self.event_id = await self.client.send_notice(
-            self.bot_controll_room_id, "Matrix webhook bot started!"
+            self.appservice_controll_room_id, "Matrix webhook appservice started!"
         )
         if loaded_hooks != {} and loaded_hooks is not None:
             template_text = self.load_template("webhooks_message")
             if template_text is None:
                 self.event_id = await self.client.send_notice(
-                    self.bot_controll_room_id,
+                    self.appservice_controll_room_id,
                     f"""Persisted webhooks are available, but the webhooks_message.jinja is missing from the templated folder.
                  Webhooks in json format {loaded_hooks}""",
                 )
             else:
                 rendered_message = Template(template_text).render(webhooks=loaded_hooks)
                 self.event_id = await self.client.send_notice(
-                    self.bot_controll_room_id, rendered_message
+                    self.appservice_controll_room_id, rendered_message
                 )
         self.client.add_event_handler(EventType.ROOM_MESSAGE, self.process_message)
-        self.client.start(Filter(room=RoomFilter(rooms=[self.bot_controll_room_id])))
+        self.client.start(Filter(room=RoomFilter(rooms=[self.appservice_controll_room_id])))
 
     async def stop(self):
         self.client.stop()
@@ -179,7 +179,7 @@ I'm running on port {self.listen_port}""",
         template_text = self.load_template(hook_id)
         if template_text is None:
             await self.client.send_notice(
-                self.bot_output_room_id,
+                self.appservice_output_room_id,
                 f"Service sent us a message to {self.homeserver_url}/{route_path}, but there is no template for it\r\n"
                 f"this is the message\r\n{msg}",
             )
@@ -188,7 +188,7 @@ I'm running on port {self.listen_port}""",
             rendered_message = Template(template_text).render(flattened_data)
             emojized_message = emojize(rendered_message)
             await self.client.send_message(
-                self.bot_output_room_id,
+                self.appservice_output_room_id,
                 content=TextMessageEventContent(
                     format=Format.HTML,
                     formatted_body=emojized_message.replace("\n", "<br>"),
@@ -221,41 +221,41 @@ I'm running on port {self.listen_port}""",
             return None
 
     async def setup_controll_room(self):
-        controll_room_welcome_message = "Hello from matrix webhook bot!\nThis is the controll room, feel free to ask !webhook help"
+        controll_room_welcome_message = "Hello from matrix webhook appservice!\nThis is the controll room, feel free to ask !webhook help"
 
-        self.bot_controll_room_id = get_data("bot_controll_room_id")
+        self.appservice_controll_room_id = get_data("appservice_controll_room_id")
 
-        if self.bot_controll_room_id == "":
-            self.bot_controll_room_id = await self.client.create_room(
-                name="Webhook bot controll room",
-                topic="Controll Webhook bot",
+        if self.appservice_controll_room_id == "":
+            self.appservice_controll_room_id = await self.client.create_room(
+                name="Webhook appservice controll room",
+                topic="Controll Webhook appservice",
                 is_direct=True,
                 invitees=[self.admin_user],
             )
-            save_data({"bot_controll_room_id": self.bot_controll_room_id})
+            save_data({"appservice_controll_room_id": self.appservice_controll_room_id})
             powerLevelStateEventContent = PowerLevelStateEventContent(
-                users={self.admin_user: 100, self.bot_user: 100}
+                users={self.admin_user: 100, self.appservice_user: 100}
             )
             await self.client.send_state_event(
-                room_id=self.bot_controll_room_id,
+                room_id=self.appservice_controll_room_id,
                 event_type=EventType("m.room.power_levels", EventType.Class.STATE),
                 content=powerLevelStateEventContent,
             )
             await self.client.send_notice(
-                self.bot_controll_room_id, controll_room_welcome_message
+                self.appservice_controll_room_id, controll_room_welcome_message
             )
 
     async def setup_output_room(self):
-        self.bot_output_room_id = get_data("bot_output_room_id")
-        if self.bot_output_room_id == "":
-            self.bot_output_room_id = await self.client.create_room(
-                name="Webhook bot",
-                topic="Webhook bot output room",
+        self.appservice_output_room_id = get_data("appservice_output_room_id")
+        if self.appservice_output_room_id == "":
+            self.appservice_output_room_id = await self.client.create_room(
+                name="Webhook appservice",
+                topic="Webhook appservice output room",
                 is_direct=True,
                 invitees=[self.admin_user],
             )
-            save_data({"bot_output_room_id": self.bot_output_room_id})
+            save_data({"appservice_output_room_id": self.appservice_output_room_id})
             await self.client.send_notice(
-                self.bot_output_room_id,
-                "Hello from matrix webhook bot! This is the output room for incoming webhook messages.",
+                self.appservice_output_room_id,
+                "Hello from matrix webhook appservice! This is the output room for incoming webhook messages.",
             )

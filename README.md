@@ -1,6 +1,6 @@
-# matrix-webhook-bot
+# matrix-appservice-webhook
 
-Matrix bot for creating webhook endpoints and sending webhook messages to matrix rooms
+Matrix appservice for creating webhook endpoints and sending webhook messages to matrix rooms
 
 - simple webservice that forwards webhook messages after formatting
 - simple jinja template can be used to format messages
@@ -16,7 +16,7 @@ Rename sample_config.ini to config.ini and set every config value.
 |---|---|---|
 | HOMESERVER_URL | homeserver_url | https://matrix.domain.com |
 | ADMIN_USER | admin_user | @admin:matrix.domain.com |
-| BOT_USER | bot_user | @webhook:matrix.domain.com |
+| APPSERVICE_USER | appservice_user | @webhook:matrix.domain.com |
 | TOKEN | token | syt_d2VgfG9eqr_dbvTrKgfDerOdseFMZNP_0z99KM |
 | DEVICE_ID | device_id | AABBCCDDEE |
 
@@ -28,18 +28,18 @@ You need python ">=3.13"
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install matrix-webhook-bot
-matrix-webhook-bot
+python -m pip install matrix-appservice-webhook
+matrix-appservice-webhook
 ```
 
 ## Docker
 
 ```bash
 docker run -d --rm \
-  --name matrix-webhook-bot \
-  -v /on/host/bot/config:/app/config \
+  --name matrix-appservice-webhook \
+  -v /on/host/appservice/config:/app/config \
   -p 8228:8228 \
-  ghcr.io/hidraulicchicken/matrix-webhook-bot
+  ghcr.io/hidraulicchicken/matrix-appservice-webhook
 ```
 
 ## Controll room commands
@@ -56,8 +56,8 @@ docker run -d --rm \
 Python packages are handled by uv, but if you prefer, look into pyproject.toml and install dependencies yourself.
 
 ```bash
-git clone https://github.com/hidraulicChicken/matrix-webhook-bot.git
-cd matrix-webhook-bot
+git clone https://github.com/hidraulicChicken/matrix-appservice-webhook.git
+cd matrix-appservice-webhook
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv venv --python 3.13.0
 uv pip install -e .
