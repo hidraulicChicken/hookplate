@@ -14,7 +14,7 @@ VOLUME /app/matrix_webhook_bot/config
 
 # Install dependencies and set up Python
 RUN apt update && \
-    apt install -y curl make g++ && \
+    apt install -y curl make g++ git && \
     curl -LsSf https://astral.sh/uv/install.sh | sh && \
     uv python install 3.13 && \
     uv venv --python 3.13 /app/.venv && \
